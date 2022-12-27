@@ -8,6 +8,8 @@ obj.author = "Bruno Navert"
 obj.license = "MIT"
 obj.homepage = "https://github.com/brunon/Yeelight.spoon"
 
+obj.hostname = nil
+obj.port = nil
 obj.socket = nil
 obj.command_id = 0
 local debug = false
@@ -22,9 +24,11 @@ local function responseCallback(data, tag)
 end
 
 function obj:start(hostname, port)
-  obj.socket = hs.socket.new():connect(hostname, port)
+  if hostname ~= nil then obj.hostname = hostname end
+  if port ~= nil then obj.port = port end
+  obj.socket = hs.socket.new():connect(obj.hostname, obj.port)
   if obj.socket ~= nil then
-    if debug then hs.printf("Connected to Yeelight") end
+    if debug then hs.printf("Connected to Yeelight @ %s:%d", obj.hostname, obj.port) end
     obj.socket:setCallback(responseCallback)
   else
     hs.printf('Error connecting to Yeelight')
