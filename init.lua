@@ -17,9 +17,12 @@ local debug = false
 local function responseCallback(data, tag)
   if debug then hs.printf("Got data from Yeelight socket: " .. data) end
   resp = hs.json.decode(data)
-  status = resp["result"][1]
-  if status ~= "ok" then
-    hs.printf("Received error response from Yeelight:\n" .. data)
+  result = resp["result"]
+  if result ~= nil then
+    status = resp["result"][1]
+    if status ~= "ok" then
+      hs.printf("Received error response from Yeelight:\n" .. data)
+    end
   end
 end
 
@@ -28,7 +31,7 @@ function obj:start(hostname, port)
   if port ~= nil then obj.port = port end
   obj.socket = hs.socket.new():connect(obj.hostname, obj.port)
   if obj.socket ~= nil then
-    if debug then hs.printf("Connected to Yeelight @ %s:%d", obj.hostname, obj.port) end
+    hs.printf("Connected to Yeelight @ %s:%d", obj.hostname, obj.port)
     obj.socket:setCallback(responseCallback)
   else
     hs.printf('Error connecting to Yeelight')
@@ -37,11 +40,15 @@ end
 
 function obj:stop()
   if obj.socket ~= nil then
-    if debug then hs.printf("Disconnect from Yeelight") end
+    hs.printf("Disconnect from Yeelight")
     obj.socket:setCallback(nil)
     obj.socket:disconnect()
     obj.socket = nil
   end
+end
+
+function obj:connected()
+  return obj.socket ~= nil and obj.socket:connected()
 end
 
 function obj:send_command(method, params)
